@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import com.coolweather.android.db.City;
 import com.coolweather.android.db.County;
 import com.coolweather.android.db.Province;
+import com.coolweather.android.gson.Weather;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,6 +14,11 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 public class Utility {
+    /**
+     * 处理省数据，保存到数据口
+     * @param response
+     * @return
+     */
     public static boolean handleProvinceResponse(String response) {
         if (!TextUtils.isEmpty(response)) {
             try {
@@ -63,7 +70,7 @@ public class Utility {
                     JSONObject countyObj = allCounties.getJSONObject(i);
 
                     County county = new County();
-                    county.setId(countyObj.getInt("id"));
+                    county.setWeatherId(countyObj.getString("weather_id"));
                     county.setCountyName(countyObj.getString("name"));
                     county.setCityId(cityId);
                     county.save();
@@ -76,5 +83,23 @@ public class Utility {
         }
 
         return false;
+    }
+
+    /**
+     * JSON数据解析成 Weather 实体类
+     * @param res
+     * @return
+     */
+    public static Weather handleWeatherResponse(String res) {
+        try {
+            JSONObject jsonObject = new JSONObject(res);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+
+            return new Gson().fromJson(weatherContent, Weather.class);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
